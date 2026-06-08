@@ -1,2 +1,4 @@
 # gmm_bin
-A Python utility for automated, multi-Gaussian data binning that uses the Bayesian Information Criterion (BIC) to find the optimal number of components.
+
+## Introduction
+This repository provides a Python script for automated, multi-Gaussian binning of continuous datasets. By leveraging scikit-learn's Gaussian Mixture Models (GMMs), the tool evaluates individual features and dynamically selects the optimal number of bins using the Bayesian Information Criterion (BIC). Components are automatically sorted by their means, ensuring that output labels map logically from low to high values.
