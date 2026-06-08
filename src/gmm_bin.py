@@ -7,6 +7,7 @@ from scipy.special import logsumexp
 import matplotlib.pyplot as plt
 
 def csvreader(inputfile):
+    """Reads a CSV file into a NumPy array."""
     out = []
     with open(inputfile, newline = '') as file:
         reader = csv.reader(file)
@@ -15,6 +16,7 @@ def csvreader(inputfile):
     return np.array(out)
 
 def csvwrite(file,data,labels=None):
+    """Writes a 2D array to a CSV file, optionally including a header row."""
     with open(file, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         if labels is not None:
@@ -23,6 +25,10 @@ def csvwrite(file,data,labels=None):
             csv_writer.writerow(row)
 
 def select_gmm_components(data, min_comp=3, max_components=10,model='bic'):
+    """
+    Iterates through a range of component counts to find the optimal GMM fit.
+    Returns the best model and its component count based on BIC (or AIC).
+    """
     data = data.reshape(-1, 1)
 
     evals = []
@@ -41,11 +47,16 @@ def select_gmm_components(data, min_comp=3, max_components=10,model='bic'):
     return models[best_idx], best_idx + min_comp#, evals
 
 def fit_gmm(data,n_comp=3):
+    """Fits a simple GMM with a specified number of components."""
     gmm=GaussianMixture(n_components=n_comp)
     gmm.fit(data.reshape(-1,1))
     return gmm
 
 def assign_bins_from_gmm(model, data):
+    """
+    Assigns data to GMM components and sorts the labels based on component means,
+    ensuring labels logically progress from lowest to highest value distributions.
+    """
     data = data.reshape(-1, 1)
     #return model.predict(data)
     raw_labels=model.predict(data)
@@ -59,7 +70,7 @@ def assign_bins_from_gmm(model, data):
     return np.vectorize(label_map.get)(raw_labels)
 
 if __name__ == '__main__':
-    parser=argparse.ArgumentParser()
+    parser=argparse.ArgumentParser(description="Automated multi-Gaussian data binning utility.")
 
     parser.add_argument(
         "-data_path", type=str, required=True, 
@@ -89,7 +100,7 @@ if __name__ == '__main__':
 
     ### Begin Binning Procdure ###
 
-    ## Read datafile ##
+    # 1. Read datafile and handle headers ##
     out=csvreader(args.data_path)
 
     if args.labeled==True:
@@ -99,15 +110,13 @@ if __name__ == '__main__':
     if args.labeled==False:
         data=out.astype(float)
 
-    ## Determine number of bins using GaussianMixture and BIC ##
-
-    ## Run binning for all variables and determine optimal bin number (using BIC) ##
+    # 2. Run binning for all features (columns) and determine optimal bin number via BIC 
     B=[select_gmm_components(data[:,i],min_comp=args.min_comp,max_components=args.max_comp) for i in range(data.shape[1])]
 
-    ## Assign binned values to data using GMM model and optimal bin number ##
+    # 3. Assign sorted bin labels to the data using the optimal GMM models
     L=np.array([assign_bins_from_gmm(B[i][0],data[:,i]) for i in range(data.shape[1])]).T
 
-    ## Write binned data to output file ##
+    # 4. Write final binned dataset to output file
     if args.labeled==True:
         csvwrite(args.output,np.vstack((labels,L)))
 
@@ -122,6 +131,7 @@ if __name__ == '__main__':
 ### Below here is utility functions for plotting/testing etc ###
 
 def get_pdf(gmm,x):
+    """Calculates the combined Probability Density Function for a fitted GMM."""
     means = gmm.means_.flatten()
     variances = gmm.covariances_.flatten()
     weights = gmm.weights_
@@ -131,6 +141,7 @@ def get_pdf(gmm,x):
     return pdf
 
 def plot_bins(data,n_comps=3,ax=None):
+    """Plots a histogram of the data overlaid with the GMM PDF and shaded bin regions."""
     dt=np.copy(data)
     
     gmm=fit_gmm(data,n_comps)
@@ -154,6 +165,7 @@ def plot_bins(data,n_comps=3,ax=None):
 
 
 def labels_to_edges(data, labels):
+    """Converts discrete label assignments into continuous bin edges."""
     edges = []
     for k in np.unique(labels):
         subset = data[labels == k]
@@ -170,6 +182,7 @@ def labels_to_edges(data, labels):
 
 
 def plot_bins_maxent(data, max_ent_labels):
+    """Plots histogram and shaded regions for externally provided maximum entropy labels."""
     dt = np.copy(data)
 
     x = np.linspace(dt.min(), dt.max(), 1000)
@@ -191,6 +204,7 @@ def plot_bins_maxent(data, max_ent_labels):
 
 
 def gmm_log_likelihood_vectorized(X, weights, means, covariances):
+    """Vectorized calculation of GMM log-likelihood using Mahalanobis distance."""
     N, D = X.shape
     K = len(weights)
     
