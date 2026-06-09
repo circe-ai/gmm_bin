@@ -227,3 +227,28 @@ def gmm_log_likelihood_vectorized(X, weights, means, covariances):
         log_probs[:, k] = np.log(weights[k]) + log_gauss
     
     return np.sum(logsumexp(log_probs, axis=1))
+
+## Max entropy binning function for comparison ##
+
+def maxEntropyBin(x, nbins=3):
+    u, cc = np.unique(x, return_counts=1)
+    y = x.searchsorted(u, sorter=np.argsort(x))[1:]
+    lab = np.zeros_like(x, dtype=int)
+    xsize = x.size
+    y = np.concatenate((y[1:], [x.size])) / x.size
+    cp = np.cumsum(cc) / cc.sum()
+    bins = np.empty(nbins - 1)
+    ii = cp.searchsorted(1 / nbins, 'left')
+    pii = cp[ii]
+    bins[0] = u[ii]
+    ibins = x <= bins[0]
+    lab[ibins] = 0
+    for i in range(1, nbins - 1):
+        n = nbins - i
+        ii = cp.searchsorted((1 + (n - 1) * pii) / n, 'left')
+        pii = cp[ii]
+        bins[i] = u[ii]
+        ibins = (x > bins[i - 1]) & (x <= bins[i])
+        lab[ibins] = i
+    lab[x > bins[-1]] = nbins - 1
+    return lab 
