@@ -17,14 +17,14 @@ python gmm_bin.py -data_path ./feature_matrix.csv
 This will process the file and generate a binned_output.csv in your current directory.
 
 ### 2. Advanced Execution (Recommended)
-For most real-world datasets—such as a gene expression matrix or clustered spatial domain data—your CSV will likely have a header row containing feature names. You might also want to specify the algorithm's search space for finding the optimal Gaussian Mixture Model.
+For data that has a header row containing feature names or for specifying the algorithm's search space for finding the optimal Gaussian Mixture Model, utilize the code's input parameters.
 
 Here is an example command utilizing all available parameters:
 
 ```
-python gmm_bin.py -data_path ./expression_data.csv \
+python gmm_bin.py -data_path ./labeled_feature_matrix.csv \
                   --labeled True \
-                  --output ./results/binned_expression_data.csv \
+                  --output ./binned_feature_matrix.csv \
                   --min_comp 2 \
                   --max_comp 5
 ```
