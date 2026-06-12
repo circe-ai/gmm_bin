@@ -11,7 +11,7 @@ GMM_bin is designed to be run directly from the terminal for rapid dataset proce
 If you have a raw, unlabeled dataset (e.g., feature_matrix.csv) and want to use the default parameter search space (3 to 8 components), simply pass the data path:
 
 ```
-python binning.py -data_path ./feature_matrix.csv
+python gmm_bin.py -data_path ./feature_matrix.csv
 ```
 
 This will process the file and generate a binned_output.csv in your current directory.
@@ -22,7 +22,7 @@ For most real-world datasets—such as a gene expression matrix or clustered spa
 Here is an example command utilizing all available parameters:
 
 ```
-python binning.py -data_path ./expression_data.csv \
+python gmm_bin.py -data_path ./expression_data.csv \
                   --labeled True \
                   --output ./results/binned_expression_data.csv \
                   --min_comp 2 \
